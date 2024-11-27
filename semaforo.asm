@@ -1,96 +1,108 @@
-.org 0000H       ; Início do programa na posição de memória 0x0000
+.org 0000H       
 
-; Sub-rotina de atraso (aproximadamente 1 segundo)
-DELAY_1S:
-        LXI D, 65535     ; Carregar valor grande para delay
-DELAY_LOOP:
-        DCX D           ; Decrementar contador
-        MOV A, D        ; Verificar se contador chegou a 0
-        ORA E
-        JNZ DELAY_LOOP  ; Se não for 0, repetir
-        RET
-
-; Sub-rotina de atraso de X segundos
-DELAY_XS:
-        MVI B, 0         ; Registrar para contar X segundos
-DELAY_X_LOOP:
-        CALL DELAY_1S    ; Chamar atraso de 1 segundo
-        DCR B            ; Decrementar X
-        JNZ DELAY_X_LOOP ; Repetir até que B seja 0
-        RET
-
-; Programa principal
 START:
-        ; Semáforo 1: verde (01H), amarelo (02H), vermelho (03H)
-        ; Semáforo 2: verde (04H), amarelo (05H), vermelho (06H)
+    ; Fase 1: Semáforo 1 verde, Semáforo 2 vermelho
+FASE1:
+    MVI A, C0H
+    OUT 00H             ; Acende LED verde do semáforo 1
+    OUT 01H             ; Acende LED verde do semáforo 1
 
-        ; Inicialização: Semáforo 1 verde (00H), Semáforo 2 vermelho (05H)
-        MVI A, 01H
-        OUT 00H          ; LED verde semáforo 1
-        MVI A, 00H
-        OUT 01H          ; Apagar LED amarelo semáforo 1
-        MVI A, 00H
-        OUT 02H          ; Apagar LED vermelho semáforo 1
+    MVI A, 00H
+    OUT 02H             ; Apaga LED amarelo de ambos os semáforos
+    OUT 03H             ; Apaga LED amarelo de ambos os semáforos
 
-        MVI A, 00H
-        OUT 03H          ; Apagar LED verde semáforo 2
-        MVI A, 00H
-        OUT 04H          ; Apagar LED amarelo semáforo 2
-        MVI A, 01H
-        OUT 05H          ; LED vermelho semáforo 2
+    MVI A, 03H
+    OUT 04H             ; Acende LED vermelho do semáforo 2
+    OUT 05H             ; Acende LED vermelho do semáforo 2
 
-        MVI B, 55        ; 55 segundos para o semáforo verde
-        CALL DELAY_XS
+    CALL DELAY_15_MONITOR  ; 15s de delay com monitoramento dos botões
 
-        ; Semáforo 1: amarelo (02H), Semáforo 2: vermelho (06H)
-        MVI A, 00H
-        OUT 00H          ; Apagar LED verde semáforo 1
-        MVI A, 02H
-        OUT 01H          ; LED amarelo semáforo 1
-        MVI A, 00H
-        OUT 02H          ; Apagar LED vermelho semáforo 1
+    ; Fase 2: Semáforo 1 amarelo, Semáforo 2 vermelho
+FASE2:
+    MVI A, 00H
+    OUT 00H             ; Apaga LED verde do semáforo 1
+    OUT 01H             ; Apaga LED verde do semáforo 1
 
-        MVI A, 00H
-        OUT 03H          ; Apagar LED verde semáforo 2
-        MVI A, 00H
-        OUT 04H          ; Apagar LED amarelo semáforo 2
-        MVI A, 01H
-        OUT 05H          ; LED vermelho semáforo 2
-        MVI B, 5         ; 5 segundos para o semáforo amarelo
-        CALL DELAY_XS
+    MVI A, C0H
+    OUT 02H             ; Acende LED amarelo do semáforo 1
+    OUT 03H             ; Acende LED amarelo do semáforo 1
 
-        ; Semáforo 1: vermelho (03H), Semáforo 2: verde (04H)
-        MVI A, 00H
-        OUT 00H          ; Apagar LED verde semáforo 1
-        MVI A, 00H
-        OUT 01H          ; Apagar LED amarelo semáforo 1
-        MVI A, 03H
-        OUT 02H          ; LED vermelho semáforo 1
+    MVI A, 03H
+    OUT 04H             ; Mantém LED vermelho do semáforo 2
+    OUT 05H             ; Mantém LED vermelho do semáforo 2
 
-        MVI A, 01H
-        OUT 03H          ; LED verde semáforo 2
-        MVI A, 00H
-        OUT 04H          ; Apagar LED amarelo semáforo 2
-        MVI A, 00H
-        OUT 05H          ; Apagar LED vermelho semáforo 2
-        MVI B, 55        ; 55 segundos para o semáforo verde
-        CALL DELAY_XS
+    CALL DELAY_5        ; 5s de delay
 
-        ; Semáforo 1: vermelho (03H), Semáforo 2: amarelo (05H)
-        MVI A, 00H
-        OUT 00H          ; Apagar LED verde semáforo 1
-        MVI A, 00H
-        OUT 01H          ; Apagar LED amarelo semáforo 1
-        MVI A, 03H
-        OUT 02H          ; LED vermelho semáforo 1
+    ; Fase 3: Semáforo 1 vermelho, Semáforo 2 verde
+    MVI A, 03H
+    OUT 00H             ; Acende LED verde no semáforo 2
+    OUT 01H             ; Acende LED verde no semáforo 2
 
-        MVI A, 00H
-        OUT 03H          ; Apagar LED verde semáforo 2
-        MVI A, 05H
-        OUT 04H          ; LED amarelo semáforo 2
-        MVI A, 00H
-        OUT 05H          ; Apagar LED vermelho semáforo 2
-        MVI B, 5         ; 5 segundos para o semáforo amarelo
-        CALL DELAY_XS
+    MVI A, 00H
+    OUT 02H             ; Apaga LED amarelo de ambos os semáforos
+    OUT 03H             ; Apaga LED amarelo de ambos os semáforos
 
-        JMP START        ; Repetir o ciclo
+    MVI A, C0H
+    OUT 04H             ; Acende LED vermelho no semáforo 1
+    OUT 05H             ; Acende LED vermelho no semáforo 1
+
+    CALL DELAY_15_MONITOR  ; 15s de delay com monitoramento dos botões
+
+    ; Fase 4: Semáforo 1 vermelho, Semáforo 2 amarelo
+FASE4:
+    MVI A, 00H
+    OUT 00H             ; Apaga LED verde do semáforo 2
+    OUT 01H             ; Apaga LED verde do semáforo 2
+
+    MVI A, 03H
+    OUT 02H             ; Acende LED amarelo do semáforo 2
+    OUT 03H             ; Acende LED amarelo do semáforo 2
+
+    MVI A, C0H
+    OUT 04H             ; Mantém LED vermelho do semáforo 1
+    OUT 05H             ; Mantém LED vermelho do semáforo 1
+
+    CALL DELAY_5        ; 5s de delay
+
+    JMP FASE1           ; Repetir o ciclo
+
+; Sub-rotina para monitorar os botões durante o atraso
+MONITOR_BOTAO:
+    IN 08H              ; Lê o estado dos botões (endereços 08H)
+    ANI 8CH             ; Verifica se o botão 1 foi pressionado
+    JNZ FASE2           ; Se botão 1 pressionado, vai para fase 2
+
+    IN 08H              ; Lê novamente o estado dos botões
+    ANI 40H             ; Verifica se o botão 2 foi pressionado
+    JNZ FASE4           ; Se botão 2 pressionado, vai para fase 4
+
+    RET                 ; Retorna ao programa principal se nenhum botão foi pressionado
+
+; Sub-rotina de atraso de 1 segundo
+DELAY_1:
+    MVI B, 120          ; 120 ciclos de clock a 10% da velocidade, +/- 1 seg
+DELAY_1_LOOP:
+    NOP                 ; Contador de ciclos
+    NOP                 ; Cada NOP consome um ciclo de clock
+    DCR B               ; Decrementa o contador
+    JNZ DELAY_1_LOOP    ; Se B não for zero, repete o loop
+    RET                 
+
+; Sub-rotina de atraso de 5 segundos
+DELAY_5:
+    MVI C, 5            ; Configura 5 segundos
+DELAY_5_LOOP:
+    CALL DELAY_1        ; Chama atraso de 1 segundo
+    DCR C               ; Decrementa o contador de segundos
+    JNZ DELAY_5_LOOP    ; Repete até completar 5 segundos
+    RET
+
+    ; Sub-rotina de atraso com monitoramento contínuo - 15 segundos
+DELAY_15_MONITOR:
+    MVI C, 15
+DELAY_15_LOOP:
+    CALL DELAY_1        ; Atraso de 1 segundo
+    CALL MONITOR_BOTAO  ; Verifica os botões durante o atraso
+    DCR C
+    JNZ DELAY_15_LOOP
+    RET
